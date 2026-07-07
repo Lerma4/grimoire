@@ -61,7 +61,9 @@ func (r *TaskRepo) List(ctx context.Context, f TaskFilter) ([]domain.Task, error
 	var args []any
 	joins := ""
 	clauses := []string{}
-	if !f.IncludeArchived {
+	// Exclude archived unless explicitly requested, but never when the caller
+	// is filtering for archived status (that would contradict itself).
+	if !f.IncludeArchived && f.Status != domain.StatusArchived {
 		clauses = append(clauses, "t.status <> 'archived'")
 	}
 	if f.Status != "" {

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 
 	"github.com/Lerma4/grimoire/internal/app"
 	"github.com/Lerma4/grimoire/internal/store"
+	"github.com/Lerma4/grimoire/internal/tui"
 )
 
 func main() {
@@ -79,7 +81,6 @@ func newDoctorCmd() *cobra.Command {
 }
 
 // runTUI opens and migrates the database, then starts the terminal interface.
-// The full TUI is wired in a later step; until then this confirms storage.
 func runTUI() error {
 	cfg, err := app.DefaultConfig()
 	if err != nil {
@@ -97,7 +98,7 @@ func runTUI() error {
 		return err
 	}
 
-	fmt.Println("Grimoire — database ready at", cfg.DBPath)
-	fmt.Println("Full TUI lands in the next steps. Try: grimoire doctor")
-	return nil
+	p := tea.NewProgram(tui.NewModel(tui.Deps{DB: db, DBPath: cfg.DBPath}), tea.WithAltScreen())
+	_, err = p.Run()
+	return err
 }

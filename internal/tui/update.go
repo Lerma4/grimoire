@@ -9,15 +9,19 @@ import (
 
 // Update routes messages to the active mode.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if km, ok := msg.(tea.KeyMsg); ok && km.String() == "ctrl+c" {
+		m.quit = true
+		return m, tea.Quit
+	}
+	// huh form takes over when active.
+	if m.form != nil {
+		return m.updateForm(msg)
+	}
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		return m, nil
 	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
-			m.quit = true
-			return m, tea.Quit
-		}
 		if m.mode == components.ModeHelp {
 			m.mode = components.ModeNormal
 			return m, nil
@@ -97,15 +101,15 @@ func (m Model) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "/":
 		return m.enterSearch()
 	case "a":
-		return m.enterCommand("task add ")
+		return m.openTaskForm(true)
 	case "A":
-		return m.enterCommand("note add ")
+		return m.openNoteForm(true)
 	case "e":
-		m.setStatus("edit via form — coming soon; use : commands for now")
+		return m.openEditForm()
 	case "d":
 		m.archiveSelected()
 	case "D":
-		m.deleteSelected()
+		return m.openDeleteConfirm()
 	case "L":
 		return m.enterCommand("link ")
 	case "U":

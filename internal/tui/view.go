@@ -14,6 +14,9 @@ func (m Model) View() string {
 	if m.width == 0 {
 		return "loading grimoire…"
 	}
+	if m.form != nil {
+		return m.renderForm()
+	}
 	if m.mode == components.ModeHelp {
 		return m.helpView()
 	}

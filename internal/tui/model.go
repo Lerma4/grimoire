@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 
 	"github.com/Lerma4/grimoire/internal/domain"
 	"github.com/Lerma4/grimoire/internal/service"
@@ -43,6 +44,9 @@ type Model struct {
 
 	cmdInput    textinput.Model
 	searchInput textinput.Model
+
+	form      *huh.Form
+	formApply func(*Model)
 
 	statusMsg string
 	errMsg    string

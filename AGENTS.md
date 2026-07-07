@@ -87,6 +87,10 @@ The TUI talks **only** to `service`. Services talk only to `store` interfaces.
 - Manage the app version deliberately from now on: bump `internal/app/version.go`
   for user-visible changes before committing (`patch` for fixes, `minor` for
   features, `major` only for breaking changes).
+- Use tagged releases for stable versions. Release flow: change
+  `internal/app/version.go` from `X.Y.Z-dev` to `X.Y.Z`, commit
+  `chore: release X.Y.Z`, create annotated tag `vX.Y.Z`, push commit and tag,
+  then bump to the next `-dev` version in a follow-up commit.
 - Push after each commit (or small coherent group). Do not accumulate large
   unpushed diffs on `main`.
 - Do not commit the binary, the SQLite DB, or editor cruft (see `.gitignore`).

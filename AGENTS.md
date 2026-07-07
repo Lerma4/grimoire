@@ -84,6 +84,9 @@ The TUI talks **only** to `service`. Services talk only to `store` interfaces.
 - Commit message style follows the existing history — Conventional Commits with
   Gitflow intent: `feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`.
   Use clear, descriptive subjects and a short body for the "why".
+- Manage the app version deliberately from now on: bump `internal/app/version.go`
+  for user-visible changes before committing (`patch` for fixes, `minor` for
+  features, `major` only for breaking changes).
 - Push after each commit (or small coherent group). Do not accumulate large
   unpushed diffs on `main`.
 - Do not commit the binary, the SQLite DB, or editor cruft (see `.gitignore`).

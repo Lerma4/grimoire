@@ -17,7 +17,9 @@ func RenderMarkdown(body string, width int) string {
 		return body
 	}
 	r, err := glamour.NewTermRenderer(
-		glamour.WithAutoStyle(),
+		// ponytail: avoid WithAutoStyle; it queries the terminal from View and
+		// races Bubble Tea's stdin reader when the notes pane renders markdown.
+		glamour.WithStandardStyle("dark"),
 		glamour.WithWordWrap(width),
 		glamour.WithEmoji(),
 	)

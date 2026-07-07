@@ -1,0 +1,28 @@
+# binaries
+/grimoire
+/grimoire.exe
+/bin/
+/dist/
+
+# go
+*.test
+*.out
+coverage.txt
+profile.out
+
+# sqlite
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# editor / os
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~

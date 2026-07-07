@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Lerma4/grimoire/internal/app"
+	"github.com/Lerma4/grimoire/internal/store"
 )
 
 func main() {
@@ -77,10 +78,26 @@ func newDoctorCmd() *cobra.Command {
 	}
 }
 
-// runTUI opens the terminal interface. The full TUI is wired in a later step;
-// until then this reports progress so the binary is still usable.
+// runTUI opens and migrates the database, then starts the terminal interface.
+// The full TUI is wired in a later step; until then this confirms storage.
 func runTUI() error {
-	fmt.Println("Grimoire — TUI not yet wired in this build.")
-	fmt.Println("Try: grimoire version | grimoire doctor")
+	cfg, err := app.DefaultConfig()
+	if err != nil {
+		return err
+	}
+	db, err := store.Open(cfg.DBPath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	if err := store.Migrate(db); err != nil {
+		return err
+	}
+	if err := store.SeedIfEmpty(db); err != nil {
+		return err
+	}
+
+	fmt.Println("Grimoire — database ready at", cfg.DBPath)
+	fmt.Println("Full TUI lands in the next steps. Try: grimoire doctor")
 	return nil
 }

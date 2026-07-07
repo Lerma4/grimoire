@@ -110,7 +110,8 @@ func (m Model) renderDetail(width int) string {
 		return components.TaskDetail(t, m.selTags, m.selLinkedNotes, width, focused)
 	}
 	if n, ok := m.selectedNote(); ok {
-		return components.NoteDetail(n, m.selTags, m.selLinkedTasks, n.Body, width, focused)
+		preview := components.RenderMarkdown(n.Body, width-4)
+		return components.NoteDetail(n, m.selTags, m.selLinkedTasks, preview, width, focused)
 	}
 	return emptyDetail(width, focused)
 }

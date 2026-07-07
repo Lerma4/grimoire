@@ -13,13 +13,29 @@ notes — and for linking the two contextually. Think of it as a small arcane
 tome you keep in your pocket terminal: fast, keyboard-driven, offline, and
 with zero external services.
 
-- Vim-style modal TUI (Normal / Insert / Command / Search)
-- Three-column layout: sidebar · list · detail
+- Vim-style modal TUI (Normal / Command / Search)
+- Three-column layout: sidebar · list · detail (collapses on narrow terminals)
 - Tasks with status, priority, due dates, projects, tags
-- Markdown notes with live preview
+- Markdown notes with live preview (glamour)
 - Many-to-many task ↔ note linking
 - SQLite storage (pure-Go driver, no CGO)
 - Cross-platform: Linux & Windows, one `go install`
+
+```
+┌─✦ Grimoire───────────────────────┬─Tasks───────────────┬─Task──────────────────────┐
+│ ▸ ○ Tasks    4                   │ ▸ ○ !! Ship v0.1     │  Ship v0.1                │
+│   ✎ Notes    3                   │   ◐ !  Wire the TUI  │                           │
+│   ★ Today    2                   │   ●    Seed the db   │  Status     ◐ doing       │
+│   ▣ Projects 1                   │   ○    Write docs    │  Priority   high          │
+│   # Tags     5                   │                      │  Due        2026-07-10    │
+│   ↔ Links    2                   │                      │  Tags       #release      │
+│   ▽ Archive  7                   │                      │                           │
+│                                  │                      │  Linked notes (1)         │
+│                                  │                      │   ✎ Release checklist     │
+├──────────────────────────────────┴──────────────────────┴───────────────────────────┤
+│ [NORMAL]  j/k move · h/l panes · : cmd · / search · ? help · q quit                  │
+└──────────────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -93,13 +109,13 @@ grimoire
 | `n` / `N`   | Next / previous search result                   |
 | `Enter`     | Open / focus detail                             |
 | `Space`     | Toggle task done ↔ todo                         |
-| `a`         | New task                                        |
-| `A`         | New note                                        |
-| `e`         | Edit selected                                   |
-| `d`         | Archive                                         |
-| `D`         | Delete (confirm)                                |
+| `a`         | New task (form)                                |
+| `A`         | New note (form)                                |
+| `e`         | Edit selected (form)                           |
+| `d`         | Archive                                        |
+| `D`         | Delete (confirm)                               |
 | `t m p #`   | Jump to Tasks / Notes / Projects / Tags         |
-| `L` / `U`   | Link / unlink task ↔ note                       |
+| `L` / `U`   | Link / unlink task ↔ note (`:link`/`:unlink`)   |
 | `?`         | Help                                            |
 | `:`         | Command mode                                    |
 | `q`         | Quit                                            |
@@ -149,8 +165,8 @@ make run      # go run ./cmd/grimoire
 make build    # build ./bin/grimoire
 make install  # go install ./cmd/grimoire
 make test     # go test ./...
-make fmt      # gofmt -w .
-make vet      # go vet ./...
+make check    # gofmt + go vet + go test (the pre-commit gate)
+make lint     # golangci-lint run (skipped if not installed)
 ```
 
 ### Optional: golangci-lint

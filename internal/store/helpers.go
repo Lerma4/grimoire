@@ -7,11 +7,3 @@ func nullString(s string) any {
 	}
 	return s
 }
-
-// nullID returns nil for zero ids so they are stored as SQL NULL.
-func nullID(id int64) any {
-	if id == 0 {
-		return nil
-	}
-	return id
-}

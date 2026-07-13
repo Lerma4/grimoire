@@ -147,22 +147,3 @@ func TestNoteRepo_CRUDAndArchive(t *testing.T) {
 		t.Fatalf("unarchived note should be visible again")
 	}
 }
-
-func TestProjectRepo_FindOrCreate(t *testing.T) {
-	db := newTestDB(t)
-	ctx := context.Background()
-	r := NewProjectRepo(db)
-
-	p, err := r.Create(ctx, domain.Project{Name: "Alpha"})
-	if err != nil {
-		t.Fatalf("create: %v", err)
-	}
-	again, err := r.GetByName(ctx, "Alpha")
-	if err != nil || again.ID != p.ID {
-		t.Fatalf("getbyname: %v %+v", err, again)
-	}
-	list, _ := r.List(ctx)
-	if len(list) != 1 {
-		t.Fatalf("list len=%d", len(list))
-	}
-}

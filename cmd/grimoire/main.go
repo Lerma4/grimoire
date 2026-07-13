@@ -98,7 +98,7 @@ func runTUI() error {
 		return err
 	}
 
-	p := tea.NewProgram(tui.NewModel(tui.Deps{DB: db, DBPath: cfg.DBPath}), tea.WithAltScreen())
+	p := tea.NewProgram(tui.NewModel(tui.Deps{DB: db, DBPath: cfg.DBPath}), tea.WithAltScreen(), tea.WithMouseCellMotion())
 	_, err = p.Run()
 	return err
 }

@@ -15,7 +15,7 @@ with zero external services.
 
 - Vim-style modal TUI (Normal / Command / Search)
 - Three-column layout: sidebar · list · detail (collapses on narrow terminals)
-- Tasks with status, priority, due dates, projects, tags
+- Tasks with status, priority, due dates, tags
 - Markdown notes with live preview (glamour)
 - Many-to-many task ↔ note linking
 - SQLite storage (pure-Go driver, no CGO)
@@ -26,10 +26,10 @@ with zero external services.
 │ ▸ ○ Tasks    4                   │ ▸ ○ !! Ship v0.1     │  Ship v0.1                │
 │   ✎ Notes    3                   │   ◐ !  Wire the TUI  │                           │
 │   ★ Today    2                   │   ●    Seed the db   │  Status     ◐ doing       │
-│   ▣ Projects 1                   │   ○    Write docs    │  Priority   high          │
-│   # Tags     5                   │                      │  Due        2026-07-10    │
-│   ↔ Links    2                   │                      │  Tags       #release      │
-│   ▽ Archive  7                   │                      │                           │
+│   # Tags     5                   │   ○    Write docs    │  Priority   high          │
+│   ↔ Links    2                   │                      │  Due        2026-07-10    │
+│   ▽ Archive  7                   │                      │  Tags       #release      │
+│                                  │                      │                           │
 │                                  │                      │  Linked notes (1)         │
 │                                  │                      │   ✎ Release checklist     │
 ├──────────────────────────────────┴──────────────────────┴───────────────────────────┤
@@ -114,7 +114,7 @@ grimoire
 | `e`         | Edit selected (form)                           |
 | `d`         | Archive                                        |
 | `D`         | Delete (confirm)                               |
-| `t m p #`   | Jump to Tasks / Notes / Projects / Tags         |
+| `t m #`   | Jump to Tasks / Notes / Tags                    |
 | `L` / `U`   | Link / unlink task ↔ note (`:link`/`:unlink`)   |
 | `?`         | Help                                            |
 | `:`         | Command mode                                    |
@@ -130,7 +130,6 @@ grimoire
 :archive             archive selected
 :delete              delete selected (confirm)
 :link  :unlink       link / unlink task ↔ note
-:project <name>      set project
 :tag <name>          add tag
 ```
 

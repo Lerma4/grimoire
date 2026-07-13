@@ -26,14 +26,13 @@ type TaskFilter = store.TaskFilter
 
 // TaskService handles task lifecycle and validation.
 type TaskService struct {
-	repo     TaskRepo
-	projects *ProjectService
-	tags     *TagService
+	repo TaskRepo
+	tags *TagService
 }
 
 // NewTaskService builds a TaskService.
-func NewTaskService(repo TaskRepo, projects *ProjectService, tags *TagService) *TaskService {
-	return &TaskService{repo: repo, projects: projects, tags: tags}
+func NewTaskService(repo TaskRepo, tags *TagService) *TaskService {
+	return &TaskService{repo: repo, tags: tags}
 }
 
 // TaskInput holds the editable fields of a task.
@@ -42,7 +41,6 @@ type TaskInput struct {
 	Description string
 	Priority    string
 	DueDate     string // RFC3339 or empty
-	ProjectID   int64
 }
 
 // Create validates and inserts a task.
@@ -59,7 +57,6 @@ func (s *TaskService) Create(ctx context.Context, in TaskInput) (domain.Task, er
 		Description: strings.TrimSpace(in.Description),
 		Priority:    in.Priority,
 		DueDate:     in.DueDate,
-		ProjectID:   in.ProjectID,
 		Status:      domain.StatusTodo,
 	}
 	if err := t.Validate(); err != nil {
@@ -94,7 +91,6 @@ func (s *TaskService) Update(ctx context.Context, id int64, in TaskInput) (domai
 		t.Priority = in.Priority
 	}
 	t.DueDate = in.DueDate
-	t.ProjectID = in.ProjectID
 	if err := t.Validate(); err != nil {
 		return t, err
 	}
@@ -133,25 +129,6 @@ func (s *TaskService) Archive(ctx context.Context, id int64) error {
 // Delete removes a task permanently.
 func (s *TaskService) Delete(ctx context.Context, id int64) error {
 	return s.repo.Delete(ctx, id)
-}
-
-// SetProject moves a task to a project (by name; created if missing).
-func (s *TaskService) SetProject(ctx context.Context, id int64, name string) (domain.Task, error) {
-	t, err := s.repo.Get(ctx, id)
-	if err != nil {
-		return t, err
-	}
-	name = strings.TrimSpace(name)
-	if name == "" {
-		t.ProjectID = 0
-		return t, s.repo.Update(ctx, t)
-	}
-	p, err := s.projects.FindOrCreate(ctx, name)
-	if err != nil {
-		return t, err
-	}
-	t.ProjectID = p.ID
-	return t, s.repo.Update(ctx, t)
 }
 
 // TagByName attaches a tag to a task by name.

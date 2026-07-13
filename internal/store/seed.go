@@ -33,22 +33,16 @@ func SeedIfEmpty(db *sql.DB) error {
 		_, err = tx.Exec(query, args...)
 	}
 
-	mustExec(`INSERT INTO projects (name, description, created_at, updated_at) VALUES (?, ?, ?, ?)`,
-		"Grimoire", "Welcome project — feel free to delete me.", now, now)
-
-	mustExec(`INSERT INTO tasks (title, description, status, priority, due_date, project_id, created_at, updated_at)
-		VALUES (?, ?, 'todo', 'high', ?,
-			(SELECT id FROM projects WHERE name='Grimoire'), ?, ?)`,
+	mustExec(`INSERT INTO tasks (title, description, status, priority, due_date, created_at, updated_at)
+		VALUES (?, ?, 'todo', 'high', ?, ?, ?)`,
 		"Open the help screen", "Press `?` inside the TUI to see all keybindings.", due, now, now)
 
-	mustExec(`INSERT INTO tasks (title, description, status, priority, project_id, created_at, updated_at)
-		VALUES (?, ?, 'doing', 'medium',
-			(SELECT id FROM projects WHERE name='Grimoire'), ?, ?)`,
+	mustExec(`INSERT INTO tasks (title, description, status, priority, created_at, updated_at)
+		VALUES (?, ?, 'doing', 'medium', ?, ?)`,
 		"Explore task↔note linking", "Select a task and press `L` to link a note.", now, now)
 
-	mustExec(`INSERT INTO notes (title, body, project_id, created_at, updated_at)
-		VALUES (?, ?,
-			(SELECT id FROM projects WHERE name='Grimoire'), ?, ?)`,
+	mustExec(`INSERT INTO notes (title, body, created_at, updated_at)
+		VALUES (?, ?, ?, ?)`,
 		"Welcome to your Grimoire",
 		"# Welcome\n\n"+
 			"This is a **markdown note**. Press `e` to edit it, `?` for help.\n\n"+

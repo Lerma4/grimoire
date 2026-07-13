@@ -31,11 +31,10 @@ type Model struct {
 	pendingG bool // waiting for second 'g' in 'gg'
 
 	// displayed lists, filtered by the active section
-	tasks    []domain.Task
-	notes    []domain.Note
-	projects []domain.Project
-	tags     []domain.Tag
-	cursor   int
+	tasks  []domain.Task
+	notes  []domain.Note
+	tags   []domain.Tag
+	cursor int
 
 	// context for the detail panel of the current selection
 	selTags        []domain.Tag
@@ -107,16 +106,12 @@ func (m *Model) refresh() {
 		n, _ := m.svc.Notes.List(ctx, service.NoteFilter{IncludeArchived: true})
 		m.tasks = t
 		m.notes = filterArchivedNotes(n)
-	case components.SectionProjects:
-		p, _ := m.svc.Projects.List(ctx)
-		m.projects = p
 	case components.SectionTags:
 		tg, _ := m.svc.Tags.List(ctx)
 		m.tags = tg
 	case components.SectionLinks:
-		// links section: show tasks that have linked notes as a jumping-off point
-		t, _ := m.svc.Tasks.List(ctx, service.TaskFilter{})
-		m.tasks = t
+		// links section: show only tasks that have linked notes
+		m.tasks = m.tasksWithLinks()
 		m.notes = nil
 	}
 	if m.cursor > 0 && m.cursor >= m.listLen() {
@@ -157,8 +152,6 @@ func (m Model) listLen() int {
 	switch m.section {
 	case components.SectionNotes:
 		return len(m.notes)
-	case components.SectionProjects:
-		return len(m.projects)
 	case components.SectionTags:
 		return len(m.tags)
 	default:
@@ -199,28 +192,30 @@ func (m Model) counts() components.Counts {
 	if ts, err := m.svc.Tasks.List(ctx, service.TaskFilter{Overdue: true}); err == nil {
 		c.Today = len(ts)
 	}
-	if ps, err := m.svc.Projects.List(ctx); err == nil {
-		c.Projects = len(ps)
-	}
 	if tg, err := m.svc.Tags.List(ctx); err == nil {
 		c.Tags = len(tg)
 	}
-	c.Links = countLinks(m)
+	c.Links = len(m.tasksWithLinks())
 	if at, err := m.svc.Tasks.List(ctx, service.TaskFilter{Status: domain.StatusArchived}); err == nil {
 		c.Archive = len(at)
 	}
 	return c
 }
 
-func countLinks(m Model) int {
-	// ponytail: O(tasks) scan for a count; fine for a local single-user DB.
-	n := 0
-	for _, t := range m.tasks {
-		if ns, err := m.svc.Links.NotesForTask(service.Ctx, t.ID); err == nil {
-			n += len(ns)
+// tasksWithLinks returns tasks that have at least one linked note.
+func (m Model) tasksWithLinks() []domain.Task {
+	// ponytail: O(tasks) with one NotesForTask call each; fine for a local single-user DB.
+	tasks, err := m.svc.Tasks.List(service.Ctx, service.TaskFilter{})
+	if err != nil {
+		return nil
+	}
+	var out []domain.Task
+	for _, t := range tasks {
+		if ns, err := m.svc.Links.NotesForTask(service.Ctx, t.ID); err == nil && len(ns) > 0 {
+			out = append(out, t)
 		}
 	}
-	return n
+	return out
 }
 
 func max(a, b int) int {

@@ -19,7 +19,6 @@ func NewNoteRepo(db *sql.DB) *NoteRepo { return &NoteRepo{db: db} }
 
 // NoteFilter narrows note queries.
 type NoteFilter struct {
-	ProjectID       int64
 	TagID           int64
 	Search          string
 	IncludeArchived bool
@@ -30,9 +29,9 @@ func (r *NoteRepo) Create(ctx context.Context, n domain.Note) (domain.Note, erro
 	n.CreatedAt = domain.TimeStamp()
 	n.UpdatedAt = n.CreatedAt
 	res, err := r.db.ExecContext(ctx,
-		`INSERT INTO notes (title, body, project_id, created_at, updated_at)
-		 VALUES (?,?,?,?,?)`,
-		n.Title, n.Body, nullID(n.ProjectID), n.CreatedAt, n.UpdatedAt)
+		`INSERT INTO notes (title, body, created_at, updated_at)
+		 VALUES (?,?,?,?)`,
+		n.Title, n.Body, n.CreatedAt, n.UpdatedAt)
 	if err != nil {
 		return n, fmt.Errorf("insert note: %w", err)
 	}
@@ -54,10 +53,6 @@ func (r *NoteRepo) List(ctx context.Context, f NoteFilter) ([]domain.Note, error
 	clauses := []string{}
 	if !f.IncludeArchived {
 		clauses = append(clauses, "n.archived_at IS NULL")
-	}
-	if f.ProjectID != 0 {
-		clauses = append(clauses, "n.project_id = ?")
-		args = append(args, f.ProjectID)
 	}
 	if f.TagID != 0 {
 		joins += " JOIN note_tags nt ON nt.note_id = n.id"
@@ -95,8 +90,8 @@ func (r *NoteRepo) List(ctx context.Context, f NoteFilter) ([]domain.Note, error
 func (r *NoteRepo) Update(ctx context.Context, n domain.Note) error {
 	n.UpdatedAt = domain.TimeStamp()
 	_, err := r.db.ExecContext(ctx,
-		`UPDATE notes SET title=?, body=?, project_id=?, archived_at=?, updated_at=? WHERE id=?`,
-		n.Title, n.Body, nullID(n.ProjectID), nullString(n.ArchivedAt), n.UpdatedAt, n.ID)
+		`UPDATE notes SET title=?, body=?, archived_at=?, updated_at=? WHERE id=?`,
+		n.Title, n.Body, nullString(n.ArchivedAt), n.UpdatedAt, n.ID)
 	if err != nil {
 		return fmt.Errorf("update note %d: %w", n.ID, err)
 	}
@@ -132,13 +127,13 @@ func (r *NoteRepo) Count(ctx context.Context) (int, error) {
 	return n, err
 }
 
-const noteCols = `SELECT n.id, n.title, COALESCE(n.body,''), COALESCE(n.project_id,0),
+const noteCols = `SELECT n.id, n.title, COALESCE(n.body,''),
 	n.created_at, n.updated_at, COALESCE(n.archived_at,'')
 	FROM notes n`
 
 func scanNote(scan scanner) (domain.Note, error) {
 	var n domain.Note
-	err := scan(&n.ID, &n.Title, &n.Body, &n.ProjectID, &n.CreatedAt, &n.UpdatedAt, &n.ArchivedAt)
+	err := scan(&n.ID, &n.Title, &n.Body, &n.CreatedAt, &n.UpdatedAt, &n.ArchivedAt)
 	if err != nil {
 		return n, err
 	}

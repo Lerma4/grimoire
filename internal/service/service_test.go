@@ -70,15 +70,6 @@ func TestTaskService_Lifecycle(t *testing.T) {
 		t.Fatalf("toggle back failed: %+v", t1)
 	}
 
-	if _, err := s.Tasks.SetProject(ctx, t1.ID, "Release"); err != nil {
-		t.Fatalf("setproject: %v", err)
-	}
-	t1, _ = s.Tasks.Get(ctx, t1.ID)
-	projs, _ := s.Projects.List(ctx)
-	if t1.ProjectID == 0 || len(projs) != 1 {
-		t.Fatalf("project not set/created: %+v projs=%d", t1, len(projs))
-	}
-
 	if err := s.Tasks.TagByName(ctx, t1.ID, "urgent"); err != nil {
 		t.Fatalf("tag: %v", err)
 	}
@@ -124,9 +115,6 @@ func TestNoteService_Lifecycle(t *testing.T) {
 	if err := s.Notes.Unarchive(ctx, n.ID); err != nil {
 		t.Fatalf("unarchive: %v", err)
 	}
-	if _, err := s.Notes.SetProject(ctx, n.ID, "Docs"); err != nil {
-		t.Fatalf("setproject: %v", err)
-	}
 	if err := s.Notes.TagByName(ctx, n.ID, "draft"); err != nil {
 		t.Fatalf("tag: %v", err)
 	}
@@ -171,23 +159,6 @@ func TestLinkService_AndSearch(t *testing.T) {
 	linked, _ = s.Links.NotesForTask(ctx, task.ID)
 	if len(linked) != 0 {
 		t.Fatalf("expected unlinked, got %d", len(linked))
-	}
-}
-
-func TestProjectService_FindOrCreate(t *testing.T) {
-	s := newServices(t)
-	ctx := context.Background()
-
-	p1, err := s.Projects.FindOrCreate(ctx, "Solo")
-	if err != nil {
-		t.Fatalf("findorcreate: %v", err)
-	}
-	p2, err := s.Projects.FindOrCreate(ctx, "Solo")
-	if err != nil {
-		t.Fatalf("findorcreate 2: %v", err)
-	}
-	if p1.ID != p2.ID {
-		t.Fatalf("findorcreate should return same project: %d != %d", p1.ID, p2.ID)
 	}
 }
 

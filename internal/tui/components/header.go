@@ -4,8 +4,8 @@ import (
 	"strings"
 )
 
-// Header renders the top bar: section, filter, project and db status.
-func Header(section, filter, project, dbStatus string, width int) string {
+// Header renders the top bar: section, filter and db status.
+func Header(section, filter, dbStatus string, width int) string {
 	parts := []string{
 		Styles.Accent.Render("✦ Grimoire"),
 		Styles.Muted.Render("│"),
@@ -13,9 +13,6 @@ func Header(section, filter, project, dbStatus string, width int) string {
 	}
 	if filter != "" {
 		parts = append(parts, Styles.Muted.Render("│"), "filter:", Styles.Warning.Render(filter))
-	}
-	if project != "" {
-		parts = append(parts, Styles.Muted.Render("│"), "project:", ColorCyanInline(project))
 	}
 	parts = append(parts, Styles.Muted.Render("│"), dbStatus)
 	return Styles.Header.Width(width).Render(joinInline(parts))
@@ -52,11 +49,6 @@ func CommandBar(input string, width int) string {
 // InputBar renders a generic inline prompt (used for quick create/link).
 func InputBar(prompt, input string, width int) string {
 	return Styles.StatusBar.Width(width).Render(prompt + " " + input + block())
-}
-
-// ColorCyanInline renders s in the cyan accent color.
-func ColorCyanInline(s string) string {
-	return Styles.Title.Render(s)
 }
 
 func block() string { return Styles.Muted.Render("  ⏎ enter · esc cancel") }

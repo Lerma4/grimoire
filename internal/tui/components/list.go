@@ -11,7 +11,7 @@ import (
 
 // Counts holds per-section item counts shown in the sidebar.
 type Counts struct {
-	Tasks, Notes, Today, Projects, Tags, Links, Archive int
+	Tasks, Notes, Today, Tags, Links, Archive int
 }
 
 // Sidebar renders the left navigation column.
@@ -20,33 +20,33 @@ func Sidebar(active Section, counts Counts, width int, focused bool) string {
 	items := []string{head, ""}
 
 	render := func(s Section, n int) {
-		marker := " "
 		name := s.String()
 		cnt := fmt.Sprintf("%d", n)
 		if width < 18 {
 			name = "" // collapse to glyph only
 		}
+		var left string
+		style := Styles.Muted
 		if s == active {
-			line := fmt.Sprintf("%s %s", Styles.Accent.Render("▸"), s.Glyph())
-			if name != "" {
-				line += " " + name
-			}
-			line += " " + Styles.Muted.Render(cnt)
-			items = append(items, Styles.Selected.Render(pad(line, width-2)))
-			return
+			left = fmt.Sprintf("%s %s", Styles.Accent.Render("▸"), s.Glyph())
+			style = Styles.Selected
+		} else {
+			left = fmt.Sprintf("   %s", s.Glyph())
 		}
-		line := fmt.Sprintf("%s  %s", marker, s.Glyph())
 		if name != "" {
-			line += " " + name
+			left += " " + name
 		}
-		line += " " + Styles.Muted.Render(cnt)
-		items = append(items, Styles.Muted.Render(line))
+		gap := width - 2 - lipgloss.Width(left) - lipgloss.Width(cnt)
+		if gap < 1 {
+			gap = 1
+		}
+		line := left + strings.Repeat(" ", gap) + Styles.Muted.Render(cnt)
+		items = append(items, style.Render(line))
 	}
 
 	render(SectionTasks, counts.Tasks)
 	render(SectionNotes, counts.Notes)
 	render(SectionToday, counts.Today)
-	render(SectionProjects, counts.Projects)
 	render(SectionTags, counts.Tags)
 	render(SectionLinks, counts.Links)
 	render(SectionArchive, counts.Archive)
@@ -104,6 +104,23 @@ func NoteList(title string, notes []domain.Note, cursor, width int, focused bool
 	return boxed(title, focused, width, strings.Join(rows, "\n"))
 }
 
+// NameList renders a generic list of named items (e.g. tags).
+func NameList(title string, names []string, cursor, width int, focused bool) string {
+	if len(names) == 0 {
+		return boxed(title, focused, width, Styles.Muted.Render("  nothing here yet"))
+	}
+	rows := make([]string, 0, len(names))
+	for i, name := range names {
+		label := truncate(name, width-6)
+		line := "  " + label
+		if i == cursor {
+			line = Styles.Accent.Render("▸") + " " + Styles.CursorRow.Render(label)
+		}
+		rows = append(rows, line)
+	}
+	return boxed(title, focused, width, strings.Join(rows, "\n"))
+}
+
 func priorityMark(p string) string {
 	switch p {
 	case domain.PriorityUrgent:
@@ -126,12 +143,4 @@ func truncate(s string, max int) string {
 		return s[:max-1] + "…"
 	}
 	return s
-}
-
-func pad(s string, width int) string {
-	plain := lipgloss.Width(s)
-	if plain >= width {
-		return s
-	}
-	return s + strings.Repeat(" ", width-plain)
 }

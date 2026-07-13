@@ -64,7 +64,7 @@ func (m Model) openTaskForm(create bool) (tea.Model, tea.Cmd) {
 	m.form = form
 	m.formApply = func(mm *Model) {
 		d, _ := service.ParseDueDate(due)
-		in := service.TaskInput{Title: title, Description: desc, Priority: prio, DueDate: d, ProjectID: mm.pendingProjectID()}
+		in := service.TaskInput{Title: title, Description: desc, Priority: prio, DueDate: d}
 		if create {
 			if _, err := mm.svc.Tasks.Create(service.Ctx, in); err != nil {
 				mm.setErr(err.Error())
@@ -105,7 +105,7 @@ func (m Model) openNoteForm(create bool) (tea.Model, tea.Cmd) {
 
 	m.form = form
 	m.formApply = func(mm *Model) {
-		in := service.NoteInput{Title: title, Body: body, ProjectID: mm.pendingProjectID()}
+		in := service.NoteInput{Title: title, Body: body}
 		if create {
 			if _, err := mm.svc.Notes.Create(service.Ctx, in); err != nil {
 				mm.setErr(err.Error())
@@ -193,18 +193,6 @@ func (m Model) updateForm(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.setStatus("cancelled")
 	}
 	return m, cmd
-}
-
-// pendingProjectID returns the project of the current selection, if any, so
-// the form preserves it on edit.
-func (m Model) pendingProjectID() int64 {
-	if t, ok := m.selectedTask(); ok {
-		return t.ProjectID
-	}
-	if n, ok := m.selectedNote(); ok {
-		return n.ProjectID
-	}
-	return 0
 }
 
 // renderForm overlays the active form centered on screen.

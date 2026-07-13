@@ -19,7 +19,6 @@ func TaskDetail(t domain.Task, tags []domain.Tag, linked []domain.Note, width in
 	b.WriteString(field("Status", statusLabel))
 	b.WriteString(field("Priority", priorityLabel(t.Priority)))
 	b.WriteString(field("Due", friendlyDate(t.DueDate)))
-	b.WriteString(field("Project", ""))
 	b.WriteString(field("Tags", joinTags(tags)))
 	b.WriteString("\n")
 	b.WriteString(Styles.Muted.Render("Description") + "\n")
@@ -40,7 +39,6 @@ func TaskDetail(t domain.Task, tags []domain.Tag, linked []domain.Note, width in
 func NoteDetail(n domain.Note, tags []domain.Tag, linked []domain.Task, body string, width int, focused bool) string {
 	var b strings.Builder
 	b.WriteString(Styles.Title.Render(truncate(n.Title, width-4)) + "\n\n")
-	b.WriteString(field("Project", ""))
 	b.WriteString(field("Tags", joinTags(tags)))
 	b.WriteString("\n")
 	b.WriteString(Styles.Muted.Render("Preview") + "\n")

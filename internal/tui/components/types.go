@@ -7,7 +7,6 @@ const (
 	SectionTasks Section = iota
 	SectionNotes
 	SectionToday
-	SectionProjects
 	SectionTags
 	SectionLinks
 	SectionArchive
@@ -21,8 +20,6 @@ func (s Section) String() string {
 		return "Notes"
 	case SectionToday:
 		return "Today"
-	case SectionProjects:
-		return "Projects"
 	case SectionTags:
 		return "Tags"
 	case SectionLinks:
@@ -41,8 +38,6 @@ func (s Section) Glyph() string {
 		return "✎"
 	case SectionToday:
 		return "★"
-	case SectionProjects:
-		return "▣"
 	case SectionTags:
 		return "#"
 	case SectionLinks:
@@ -58,7 +53,6 @@ var AllSections = []Section{
 	SectionTasks,
 	SectionNotes,
 	SectionToday,
-	SectionProjects,
 	SectionTags,
 	SectionLinks,
 	SectionArchive,

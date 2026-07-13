@@ -20,7 +20,6 @@ func NewTaskRepo(db *sql.DB) *TaskRepo { return &TaskRepo{db: db} }
 // TaskFilter narrows task queries. Zero-value fields are ignored.
 type TaskFilter struct {
 	Status          string
-	ProjectID       int64
 	TagID           int64
 	Overdue         bool
 	Search          string
@@ -38,10 +37,10 @@ func (r *TaskRepo) Create(ctx context.Context, t domain.Task) (domain.Task, erro
 	t.CreatedAt = domain.TimeStamp()
 	t.UpdatedAt = t.CreatedAt
 	res, err := r.db.ExecContext(ctx, `INSERT INTO tasks
-		(title, description, status, priority, due_date, project_id, created_at, updated_at)
-		VALUES (?,?,?,?,?,?,?,?)`,
+		(title, description, status, priority, due_date, created_at, updated_at)
+		VALUES (?,?,?,?,?,?,?)`,
 		t.Title, nullString(t.Description), t.Status, t.Priority,
-		nullString(t.DueDate), nullID(t.ProjectID), t.CreatedAt, t.UpdatedAt)
+		nullString(t.DueDate), t.CreatedAt, t.UpdatedAt)
 	if err != nil {
 		return t, fmt.Errorf("insert task: %w", err)
 	}
@@ -69,10 +68,6 @@ func (r *TaskRepo) List(ctx context.Context, f TaskFilter) ([]domain.Task, error
 	if f.Status != "" {
 		clauses = append(clauses, "t.status = ?")
 		args = append(args, f.Status)
-	}
-	if f.ProjectID != 0 {
-		clauses = append(clauses, "t.project_id = ?")
-		args = append(args, f.ProjectID)
 	}
 	if f.TagID != 0 {
 		joins += " JOIN task_tags tt ON tt.task_id = t.id"
@@ -114,10 +109,10 @@ func (r *TaskRepo) List(ctx context.Context, f TaskFilter) ([]domain.Task, error
 func (r *TaskRepo) Update(ctx context.Context, t domain.Task) error {
 	t.UpdatedAt = domain.TimeStamp()
 	_, err := r.db.ExecContext(ctx, `UPDATE tasks SET
-		title=?, description=?, status=?, priority=?, due_date=?, project_id=?,
+		title=?, description=?, status=?, priority=?, due_date=?,
 		completed_at=?, archived_at=?, updated_at=? WHERE id=?`,
 		t.Title, nullString(t.Description), t.Status, t.Priority,
-		nullString(t.DueDate), nullID(t.ProjectID),
+		nullString(t.DueDate),
 		nullString(t.CompletedAt), nullString(t.ArchivedAt), t.UpdatedAt, t.ID)
 	if err != nil {
 		return fmt.Errorf("update task %d: %w", t.ID, err)
@@ -160,7 +155,7 @@ func (r *TaskRepo) Count(ctx context.Context) (int, error) {
 }
 
 const taskCols = `SELECT t.id, t.title, COALESCE(t.description,''), t.status, t.priority,
-	COALESCE(t.due_date,''), COALESCE(t.project_id,0),
+	COALESCE(t.due_date,''),
 	t.created_at, t.updated_at, COALESCE(t.completed_at,''), COALESCE(t.archived_at,'')
 	FROM tasks t`
 
@@ -169,7 +164,7 @@ type scanner func(dest ...any) error
 func scanTask(scan scanner) (domain.Task, error) {
 	var t domain.Task
 	err := scan(&t.ID, &t.Title, &t.Description, &t.Status, &t.Priority,
-		&t.DueDate, &t.ProjectID, &t.CreatedAt, &t.UpdatedAt, &t.CompletedAt, &t.ArchivedAt)
+		&t.DueDate, &t.CreatedAt, &t.UpdatedAt, &t.CompletedAt, &t.ArchivedAt)
 	if err != nil {
 		return t, err
 	}

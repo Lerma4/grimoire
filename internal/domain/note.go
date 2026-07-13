@@ -7,7 +7,6 @@ type Note struct {
 	ID         int64
 	Title      string
 	Body       string
-	ProjectID  int64
 	CreatedAt  string
 	UpdatedAt  string
 	ArchivedAt string

@@ -3,4 +3,4 @@ package app
 
 // Version is the current Grimoire version. Overridable via -ldflags
 // "-X github.com/Lerma4/grimoire/internal/app.Version=...".
-var Version = "0.1.2-dev"
+var Version = "0.2.0-dev"

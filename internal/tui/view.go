@@ -5,7 +5,6 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/Lerma4/grimoire/internal/service"
 	"github.com/Lerma4/grimoire/internal/tui/components"
 )
 
@@ -52,7 +51,7 @@ func (m Model) View() string {
 		row = lipgloss.JoinHorizontal(lipgloss.Top, sidebar, center, detail)
 	}
 
-	header := components.Header(m.section.String(), m.currentFilter(), m.currentProjectLabel(), m.dbLabel(), m.width)
+	header := components.Header(m.section.String(), m.currentFilter(), m.dbLabel(), m.width)
 	footer := m.renderFooter()
 
 	return lipgloss.JoinVertical(lipgloss.Left, header, row, footer)
@@ -95,10 +94,12 @@ func (m Model) renderList(width int) string {
 	switch m.section {
 	case components.SectionNotes:
 		return components.NoteList(title, m.notes, m.cursor, width, focused)
-	case components.SectionProjects:
-		return components.TaskList(title, nil, 0, width, false) // placeholder render
 	case components.SectionTags:
-		return components.NoteList(title, nil, 0, width, false)
+		names := make([]string, len(m.tags))
+		for i, t := range m.tags {
+			names[i] = t.Name
+		}
+		return components.NameList(title, names, m.cursor, width, focused)
 	default:
 		return components.TaskList(title, m.tasks, m.cursor, width, focused)
 	}
@@ -150,15 +151,6 @@ func (m Model) currentFilter() string {
 	return ""
 }
 
-func (m Model) currentProjectLabel() string {
-	if t, ok := m.selectedTask(); ok && t.ProjectID != 0 {
-		if p, err := m.svc.Projects.Get(service.Ctx, t.ProjectID); err == nil {
-			return p.Name
-		}
-	}
-	return ""
-}
-
 func (m Model) dbLabel() string {
 	if m.dbPath == "" {
 		return "db: ready"
@@ -185,7 +177,7 @@ func (m Model) helpView() string {
 		{"a / A", "new task / note (via :task add / :note add)"},
 		{"e", "edit selected"},
 		{"d / D", "archive / delete"},
-		{"t m p #", "Tasks / Notes / Projects / Tags"},
+		{"t m #", "Tasks / Notes / Tags"},
 		{"L / U", "link / unlink task↔note (:link/:unlink)"},
 		{":", "command mode"},
 		{"?", "this help"},

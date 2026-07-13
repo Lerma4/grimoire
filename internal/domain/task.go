@@ -29,7 +29,6 @@ type Task struct {
 	Status      string
 	Priority    string
 	DueDate     string
-	ProjectID   int64
 	CreatedAt   string
 	UpdatedAt   string
 	CompletedAt string

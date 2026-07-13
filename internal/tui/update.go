@@ -21,6 +21,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		return m, nil
+	case tea.MouseMsg:
+		return m.updateMouse(msg)
 	case tea.KeyMsg:
 		if m.mode == components.ModeHelp {
 			m.mode = components.ModeNormal
@@ -44,6 +46,8 @@ func (m Model) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "esc":
 		m.errMsg = ""
 		m.statusMsg = ""
+		// ponytail: Esc backs out of the focused pane (reverse of Tab/Enter).
+		m.pane = panePrev(m.pane)
 	case "j", "down":
 		if m.pane == components.PaneSidebar {
 			m.section = nextSection(m.section, 1)
@@ -86,8 +90,6 @@ func (m Model) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.setSection(components.SectionTasks)
 	case "m":
 		m.setSection(components.SectionNotes)
-	case "p":
-		m.setSection(components.SectionProjects)
 	case "#":
 		m.setSection(components.SectionTags)
 	case " ":
@@ -116,6 +118,47 @@ func (m Model) updateNormal(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.enterCommand("unlink ")
 	}
 	m.pendingG = false
+	return m, nil
+}
+
+// updateMouse maps clicks/scroll to panes and list rows. Only acts in normal
+// mode so command/search/form input keeps the keyboard.
+func (m Model) updateMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
+	if m.mode != components.ModeNormal {
+		return m, nil
+	}
+	// ponytail: geometry tied to boxed() chrome (border+title+sep=3) + 1-line header.
+	const headerH, boxChrome = 1, 3
+	sideW, listW, _ := m.columns()
+	switch {
+	case sideW > 0 && msg.X < sideW:
+		// sidebar: sections start 2 rows into the body (Grimoire title + blank).
+		idx := msg.Y - (headerH + boxChrome) - 2
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft &&
+			idx >= 0 && idx < len(components.AllSections) {
+			m.setSection(components.AllSections[idx])
+		}
+	case msg.X < sideW+listW:
+		row := msg.Y - (headerH + boxChrome)
+		n := m.listLen()
+		switch {
+		case msg.Button == tea.MouseButtonWheelUp && m.cursor > 0:
+			m.cursor--
+			m.loadDetail()
+		case msg.Button == tea.MouseButtonWheelDown && m.cursor < n-1:
+			m.cursor++
+			m.loadDetail()
+		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft &&
+			row >= 0 && row < n:
+			m.cursor = row
+			m.pane = components.PaneList
+			m.loadDetail()
+		}
+	default:
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
+			m.pane = components.PaneDetail
+		}
+	}
 	return m, nil
 }
 

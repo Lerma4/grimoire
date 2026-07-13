@@ -25,21 +25,19 @@ type NoteFilter = store.NoteFilter
 
 // NoteService handles note lifecycle and validation.
 type NoteService struct {
-	repo     NoteRepo
-	projects *ProjectService
-	tags     *TagService
+	repo NoteRepo
+	tags *TagService
 }
 
 // NewNoteService builds a NoteService.
-func NewNoteService(repo NoteRepo, projects *ProjectService, tags *TagService) *NoteService {
-	return &NoteService{repo: repo, projects: projects, tags: tags}
+func NewNoteService(repo NoteRepo, tags *TagService) *NoteService {
+	return &NoteService{repo: repo, tags: tags}
 }
 
 // NoteInput holds the editable fields of a note.
 type NoteInput struct {
-	Title     string
-	Body      string
-	ProjectID int64
+	Title string
+	Body  string
 }
 
 // Create validates and inserts a note.
@@ -48,7 +46,7 @@ func (s *NoteService) Create(ctx context.Context, in NoteInput) (domain.Note, er
 	if in.Title == "" {
 		return domain.Note{}, errTitle
 	}
-	n := domain.Note{Title: in.Title, Body: in.Body, ProjectID: in.ProjectID}
+	n := domain.Note{Title: in.Title, Body: in.Body}
 	if err := n.Validate(); err != nil {
 		return n, err
 	}
@@ -77,7 +75,6 @@ func (s *NoteService) Update(ctx context.Context, id int64, in NoteInput) (domai
 	}
 	n.Title = in.Title
 	n.Body = in.Body
-	n.ProjectID = in.ProjectID
 	if err := n.Validate(); err != nil {
 		return n, err
 	}
@@ -94,25 +91,6 @@ func (s *NoteService) Unarchive(ctx context.Context, id int64) error {
 
 // Delete removes a note permanently.
 func (s *NoteService) Delete(ctx context.Context, id int64) error { return s.repo.Delete(ctx, id) }
-
-// SetProject moves a note to a project (by name; created if missing).
-func (s *NoteService) SetProject(ctx context.Context, id int64, name string) (domain.Note, error) {
-	n, err := s.repo.Get(ctx, id)
-	if err != nil {
-		return n, err
-	}
-	name = strings.TrimSpace(name)
-	if name == "" {
-		n.ProjectID = 0
-		return n, s.repo.Update(ctx, n)
-	}
-	p, err := s.projects.FindOrCreate(ctx, name)
-	if err != nil {
-		return n, err
-	}
-	n.ProjectID = p.ID
-	return n, s.repo.Update(ctx, n)
-}
 
 // TagByName attaches a tag to a note by name.
 func (s *NoteService) TagByName(ctx context.Context, id int64, name string) error {

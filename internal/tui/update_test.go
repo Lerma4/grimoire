@@ -84,6 +84,24 @@ func TestNotesSectionRenders(t *testing.T) {
 	}
 }
 
+// TestEscBacksOutOfPanes checks that Esc exits the detail pane (opened via
+// Enter) back to the list, and the list back to the sidebar.
+func TestEscBacksOutOfPanes(t *testing.T) {
+	m := newModel(t)
+	m = press(m, "enter")
+	if m.pane != components.PaneDetail {
+		t.Fatalf("enter: expected detail pane, got %d", m.pane)
+	}
+	m = press(m, "esc")
+	if m.pane != components.PaneList {
+		t.Fatalf("esc from detail: expected list pane, got %d", m.pane)
+	}
+	m = press(m, "esc")
+	if m.pane != components.PaneSidebar {
+		t.Fatalf("esc from list: expected sidebar pane, got %d", m.pane)
+	}
+}
+
 // TestAllSectionsRender walks every section and renders it.
 func TestAllSectionsRender(t *testing.T) {
 	m := newModel(t)

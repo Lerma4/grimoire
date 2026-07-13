@@ -84,9 +84,6 @@ func (m *Model) execCommand(line string) error {
 		return m.linkByID(parts[1:])
 	case "unlink":
 		return m.unlinkByID(parts[1:])
-	case "project":
-		name := strings.Join(parts[1:], " ")
-		return m.setProjectSelected(name)
 	case "tag":
 		name := strings.Join(parts[1:], " ")
 		return m.tagSelected(name)
@@ -142,25 +139,6 @@ func (m *Model) unlinkByID(args []string) error {
 			return err
 		}
 		m.setStatus("unlinked")
-		return nil
-	}
-	return errNothingSelected
-}
-
-func (m *Model) setProjectSelected(name string) error {
-	ctx := service.Ctx
-	if t, ok := m.selectedTask(); ok {
-		if _, err := m.svc.Tasks.SetProject(ctx, t.ID, name); err != nil {
-			return err
-		}
-		m.setStatus("project set")
-		return nil
-	}
-	if n, ok := m.selectedNote(); ok {
-		if _, err := m.svc.Notes.SetProject(ctx, n.ID, name); err != nil {
-			return err
-		}
-		m.setStatus("project set")
 		return nil
 	}
 	return errNothingSelected
